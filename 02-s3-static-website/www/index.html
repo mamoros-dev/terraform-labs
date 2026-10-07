@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Joan Amengual</title>
+    <style>
+      :root {
+        color-scheme: light;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        font-family: Georgia, "Times New Roman", serif;
+        background: #f4f1ea;
+        color: #1f2933;
+      }
+      main {
+        max-width: 36rem;
+        padding: 2.5rem;
+        background: #fff;
+        border: 1px solid #d9d3c5;
+      }
+      p.kicker {
+        margin: 0 0 0.5rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        color: #6b7280;
+      }
+      h1 {
+        margin: 0 0 1rem;
+        font-size: 2rem;
+      }
+      p {
+        line-height: 1.55;
+        margin: 0 0 1rem;
+      }
+      p:last-child {
+        margin-bottom: 0;
+        color: #6b7280;
+        font-size: 0.95rem;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <p class="kicker">Sitio de ejemplo</p>
+      <h1>Miguel Amoros Moret</h1>
+      <p>
+        Página personal de ejemplo para el laboratorio de Terraform. El HTML
+        vive en un bucket S3 y se publica como web estática, sin servidor que
+        administrar.
+      </p>
+      <p>Desplegado con Terraform y Amazon S3.</p>
+    </main>
+  </body>
+</html>
