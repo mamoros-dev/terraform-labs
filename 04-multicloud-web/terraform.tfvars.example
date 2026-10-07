@@ -1,0 +1,11 @@
+# Plantilla. Terraform NO lee este archivo.
+# Si quieres evitar que te pregunte el subscription_id:
+#   cp terraform.tfvars.example terraform.tfvars
+# y sustituye el valor de azure_subscription_id.
+
+aws_region            = "eu-west-1"
+azure_location        = "westeurope"
+azure_subscription_id = "00000000-0000-0000-0000-000000000000"
+project_name          = "tfweb"
+environment           = "lab"
+owner_name            = "Miguel Amoros"
