@@ -1,0 +1,53 @@
+cat << 'EOF' > .gitignore
+# ==========================================
+# Terraform Exclusions
+# ==========================================
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+.terraform/
+.terraform backup/
+.terraform.lock.hcl
+.terraform.lock backup.hcl
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+tfeks
+*.tfeks
+
+# ==========================================
+# Security & Credentials
+# ==========================================
+*.pem
+*.key
+*.pub
+*.crt
+aws_credentials
+.env
+.env.*
+
+# ==========================================
+# Python & Application Exclusions
+# ==========================================
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+.pytest_cache/
+.coverage
+
+# ==========================================
+# IDE & System Files
+# ==========================================
+.vscode/
+.idea/
+.DS_Store
+*.swp
+*.tmp
+EOF
