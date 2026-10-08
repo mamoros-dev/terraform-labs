@@ -1,0 +1,22 @@
+output "vpc_id" {
+  description = "ID of the VPC"
+  value       = aws_vpc.main.id
+}
+
+output "public_subnet_ids" {
+  description = "IDs of the public subnets"
+  value       = aws_subnet.public[*].id
+}
+
+output "private_subnet_ids" {
+  description = "IDs of the private subnets"
+  value       = aws_subnet.private[*].id
+}
+
+output "public_ec2_ip" {
+  value = aws_instance.public_ec2.public_ip
+}
+
+output "private_ec2_ip" {
+  value = aws_instance.private_ec2.private_ip
+}
