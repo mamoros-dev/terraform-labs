@@ -234,7 +234,7 @@ resource "aws_security_group" "lab_sg" {
   }
 
   tags = {
-    Name = "lab01-test-sg"
+  Name = "lab01-test-sg"
   }
 }
 
