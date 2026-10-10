@@ -7,11 +7,17 @@ on:
     paths:
       - "**.tf"
       - "**.tfvars"
+      - "lab-06/infra/**"
 
 jobs:
   lint-and-validate:
     name: "Lint & Validate Terraform"
     runs-on: ubuntu-latest
+
+    # Establecemos el directorio donde se encuentran los archivos .tf
+    defaults:
+      run:
+        working-directory: ./lab-06/infra
 
     steps:
       - name: Checkout del código
