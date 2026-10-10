@@ -6,7 +6,8 @@ on:
       - main
       - master
     paths:
-      - '**.tf'
+      - '*/**.tf'
+      - '*.tf'
       - '.github/workflows/terraform-ci.yml'
 
 jobs:
@@ -22,6 +23,7 @@ jobs:
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: "1.7.0"
+          terraform_wrapper: false
 
       - name: Check Terraform Formatting
         id: fmt
