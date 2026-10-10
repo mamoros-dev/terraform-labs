@@ -6,7 +6,7 @@ resource "aws_vpc" "main" {
   enable_dns_support   = true
 
   tags = {
-    Name = "lab01-vpc"
+    Name = "lab01-vpc
   }
 }
 
@@ -220,15 +220,15 @@ resource "aws_security_group" "lab_sg" {
   # Regla 2: ICMP (Ping) interno desde la VPC
   ingress {
     from_port   = -1
-    to_port   = -1
-    protocol  = "icmp"
-    cidr_blocks     = ["10.0.0.0/16"]
+    to_port     = -1
+    protocol    = "icmp"
+    cidr_blocks = ["10.0.0.0/16"]
   }
 
   # Permitir todo el tráfico saliente a Internet
   egress {
     from_port   = 0
-    to_port  = 0
+    to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
