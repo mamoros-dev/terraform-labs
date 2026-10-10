@@ -1,0 +1,38 @@
+name: "Terraform CI - Lint & Validate"
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "**.tf"
+      - "**.tfvars"
+      - "lab-06/infra/**"
+
+jobs:
+  lint-and-validate:
+    name: "Lint & Validate Terraform"
+    runs-on: ubuntu-latest
+
+    # Establecemos el directorio donde se encuentran los archivos .tf
+    defaults:
+      run:
+        working-directory: ./lab-06/infra
+
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Configurar Terraform CLI
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.9.0"
+
+      - name: Verificar formato (Terraform Fmt)
+        run: terraform fmt -check -diff
+
+      - name: Inicializar Terraform (Init Backend Simulado/Backend-less)
+        run: terraform init -backend=false
+
+      - name: Validar sintaxis (Terraform Validate)
+        run: terraform validate
