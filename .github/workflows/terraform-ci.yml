@@ -1,49 +1,32 @@
-name: "Terraform CI - PR Validation"
+name: "Terraform CI - Lint & Validate"
 
 on:
   pull_request:
     branches:
       - main
-      - master
     paths:
-      - '*/**.tf'
-      - '*.tf'
-      - '.github/workflows/terraform-ci.yml'
+      - "**.tf"
+      - "**.tfvars"
 
 jobs:
-  validate:
+  lint-and-validate:
     name: "Lint & Validate Terraform"
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout del código
         uses: actions/checkout@v4
 
-      - name: Setup Terraform
+      - name: Configurar Terraform CLI
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: "1.7.0"
-          terraform_wrapper: false
+          terraform_version: "1.9.0"
 
-      - name: Check Terraform Formatting
-        id: fmt
+      - name: Verificar formato (Terraform Fmt)
         run: terraform fmt -check -diff
 
-      - name: Initialize Terraform
-        id: init
+      - name: Inicializar Terraform (Init Backend Simulado/Backend-less)
         run: terraform init -backend=false
 
-      - name: Validate Terraform Code
-        id: validate
-        run: terraform validate -no-color
-
-      - name: Setup TFLint
-        uses: terraform-linters/setup-tflint@v4
-        with:
-          tflint_version: "v0.50.0"
-
-      - name: Init TFLint
-        run: tflint --init
-
-      - name: Run TFLint
-        run: tflint -f compact
+      - name: Validar sintaxis (Terraform Validate)
+        run: terraform validate

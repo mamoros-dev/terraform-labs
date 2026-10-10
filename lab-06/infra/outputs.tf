@@ -13,8 +13,8 @@ output "private_subnet_ids" {
   value       = aws_subnet.private[*].id
 }
 
-output "public_ec2_ip" {
-  value = aws_instance.public_ec2.public_ip
+output   "public_ec2_ip" {
+      value = aws_instance.public_ec2.public_ip
 }
 
 output "private_ec2_ip" {
