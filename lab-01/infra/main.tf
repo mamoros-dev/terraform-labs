@@ -6,7 +6,7 @@ resource "aws_vpc" "main" {
   enable_dns_support   = true
 
   tags = {
-    Name = "lab01-vpc
+    Name = "lab01-vpc"
   }
 }
 
