@@ -1,4 +1,4 @@
-# LAB 7: Dockerfile Multi-Stage y Docker Compose con Base de Datos
+# LAB 8: Networking con Cisco Packet Tracer
 
 
 ## Table of contents
