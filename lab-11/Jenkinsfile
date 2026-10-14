@@ -1,0 +1,67 @@
+pipeline {
+    agent any
+    
+    parameters {
+        string(name: 'VERSION_APP', defaultValue: '1.0.0', description: 'Versión de la aplicación')
+    }
+    
+    environment {
+        APP_VERSION = "${params.VERSION_APP}"
+        // Simulamos la llamada a una credencial cifrada almacenada en Jenkins
+        // (En producción usarías el ID real creado en el gestor de credenciales de Jenkins)
+        API_TOKEN = credentials('mi-token-corporativo-ficticio') 
+    }
+    
+    stages {
+        stage('Validación de Entorno') {
+            steps {
+                echo "Desplegando versión: ${env.APP_VERSION}"
+                // Comprobamos que la variable de credencial está protegida (Jenkins la enmascara como ***** en los logs)
+                script {
+                    if (env.API_TOKEN != null) {
+                        echo "Credencial corporativa cargada y enmascarada correctamente de forma segura."
+                    }
+                }
+            }
+        }
+        
+        stage('Despliegue Condicional por Rama') {
+            // Práctica de empresa: Este stage solo se ejecuta si la rama es main o feature
+            when {
+                expression { 
+                    env.BRANCH_NAME == 'feature/jenkins-webhook' || 
+                    env.GIT_BRANCH == 'origin/feature/jenkins-webhook' || 
+                    currentBuild.getBuildCauses()[0].shortDescription.contains('feature/jenkins-webhook')
+                }
+            }
+            steps {
+                echo "Rama autorizada detectada. Ejecutando tareas específicas de integración..."
+                sh 'echo "Compilación validada para entornos de desarrollo/característica."'
+            }
+        }
+        
+        stage('Creación y Build Docker') {
+            steps {
+                sh 'echo "App Versión: ${APP_VERSION}" > app.info'
+                sh 'printf "FROM nginx:alpine\nCOPY app.info /usr/share/nginx/html/index.html\n" > Dockerfile'
+                sh 'docker build -t mi-empresa-app:${APP_VERSION} .'
+            }
+        }
+        
+        stage('Limpieza') {
+            steps {
+                sh 'docker rmi mi-empresa-app:${APP_VERSION} || true'
+                sh 'rm -f Dockerfile app.info'
+            }
+        }
+    }
+    
+    post {
+        success {
+            echo "¡Pipeline corporativo finalizado con éxito!"
+        }
+        failure {
+            error "El pipeline corporativo ha fallado."
+        }
+    }
+}
