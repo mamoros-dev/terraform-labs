@@ -21,13 +21,10 @@
 ## Table of contents
 
 - [Ejercicio](#ejercicio)
-- [Instalacion Jenkins](#instalacion-jenkins)
-- [Jenkinsfile](#jenkinsfile)
+- [Webhook en GitHub](#webhook-en-github)
+- [Verificaciones](#verificaciones)
 - [Pipeline real](#pipeline-real)
-- [Pipeline con parametros y credenciales](#pipeline-con-parametros-y-credenciales)
-- [Pipeline con Control de Errores y Entornos](#pipeline-con-control-de-errores-y-entornos)
-- [Resumen](#resumen)
-- [Chuleta](#chuleta)
+
 - [Author](#author)
 
 ## Ejercicio
@@ -62,12 +59,107 @@
         + Marca la casilla GitHub hook trigger for GITScm polling.
         + Esto le indica a Jenkins que quede a la escucha de las notificaciones silenciosas que lleguen desde GitHub.
 
+![](./images/webhook.png)  
 
 ## Webhook en GitHub
 + Para que GitHub sepa la dirección de tu Jenkins:
     - Vas a tu repositorio en la web de GitHub -> Settings (Configuración) -> Webhooks -> Add webhook.
     - En Payload URL, normalmente se pondría la IP pública de tu servidor Jenkins seguida de /github-webhook/ (por ejemplo: http://<tu-ip-publica>:8080/github-webhook/).
 > Nota para entorno local: Como estás en local, si no usas una herramienta de túnel como ngrok para exponer tu puerto 8080 a internet, GitHub no podrá hacer ping a tu localhost. ¡Pero no te preocupes! En los entornos de producción reales corporativos, Jenkins está desplegado en servidores internos con IP alcanzable o tras un balanceador con dominio propio.
+
+### Exponer tu Jenkins local a Internet de forma segura con Ngrok
+
++ Cuando desarrollas en local (localhost:8080), tu máquina está aislada en tu red privada. Ningún servicio de internet (como GitHub) puede enviar peticiones a tu ordenador porque no tiene una dirección pública accesible.
+    - **El problema:** Exponer tu puerto 8080 directamente abriendo puertos en el router de tu casa (port forwarding) es inseguro y peligroso.
+    - **La solución (ngrok):** Funciona como un túnel proxy inverso seguro. Crea una conexión cifrada de salida (TLS/HTTPS) desde tu ordenador hacia los servidores en la nube de ngrok. Cuando GitHub quiere hablar con tu Jenkins, le manda la petición al dominio público de ngrok, y ngrok la encripta, la pasa por el túnel privado y la entrega de forma limpia y segura a tu localhost:8080.
+    - **Seguridad:** Solo expone el puerto exacto que tú le indiques (en este caso el 8080), y toda la comunicación va cifrada con HTTPS. Además, hoy en día ngrok requiere una cuenta gratuita (con un registro rápido en su web) para autenticar los túneles, lo que añade una capa de control de identidad.
+
+
+#### Por docker
+
++ Creamos una cuenta gratuita en **NGROK** y seguimos estos pasos:
+    - Entra en tu panel y busca la sección de configuración.
+    - Localiza la opción 'Your Authtoken'
+    - Copia tu Token
+    - Lanzamos contenedor docker con el tunel http al puerto donde tenemos jenkins 8080:
+    ```bash
+    docker run --rm -it --net=host ngrok/ngrok http 8080 --authtoken TU_TOKEN_REAL
+    ```
+    > El flag --net=host le permite al contenedor de ngrok comunicarse directamente con el puerto 8080 de tu localhost
+
+![](./images/ngrok.png)  
+
++ Veremos una pantalla con la url Forwarding que nos servirá para configurar el webhook:
+```bash
+ngrok                                                                                                                                                                                           
+Jev is on ngrok.  
+Session Status online                                                                                                                                                               
+Account                       isx46410800 (Plan: Free)                                                                                                                                                            
+Update                        update available (version 3.39.11, Ctrl-U to update)                                                                                                                                
+Version                       3.39.8                                                                                                                                                                              
+Region                        Europe (eu)                                                                                                                                                                         
+Latency                       129ms                                                                                                                                                                               
+Web Interface                 http://0.0.0.0:4040                                                                                                                                                                 
+Forwarding                    https://xxxxxx.ngrok-free.app -> http://localhost:8080                                                                                                                 
+Connections                   ttl     opn     rt1     rt5     p50     p90                                                                                                                                         
+                              0       0       0.00    0.00    0.00    0.00 
+```
+
+
+#### Por bash
+
++ Si estás en Linux (Ubuntu/Debian), ngrok provee un repositorio oficial seguro de APT:
+```Bash
+curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc \
+  | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null
+echo "deb https://ngrok-agent.s3.amazonaws.com buster main" \
+  | sudo tee /etc/apt/sources.list.d/ngrok.list
+sudo apt update && sudo apt install ngrok
+```
+
++ Después, configuras tu token en tu terminal:
+```Bash
+ngrok config add-autotoken <TU_AUTOTOKEN>
+```
++ Si no tienes ngrok instalado en tu máquina, puedes levantarlo rápidamente con Docker o descargarlo. Si usas Docker, puedes correr un túnel temporal, o simplemente descargar el binario de ngrok:
+```bash
+ngrok http 8080
+```
++ Ngrok te devolverá una pantalla con una Forwarding URL pública que se verá más o menos así:
+```bash
+https://a1b2-c3d4.ngrok-free.app
+```
++ Copia esa URL. Esa será la dirección pública que usaremos para que GitHub hable con tu Jenkins.
+
+### Webhook github
+
++ **Configurar el Webhook en GitHub**:
+    - Ve a tu repositorio en GitHub y entra en Settings > Webhooks > Add webhook.
+    - En Payload URL, pega tu URL de ngrok añadiendo al final exactamente /github-webhook/ (por ejemplo: [https://tu-url.ngrok-free.app/github-webhook/](https://tu-url.ngrok-free.app/github-webhook/)).
+    - En Content type, selecciona application/json.
+    - En los eventos, selecciona "Just the push event" y pulsa Add webhook.
+    > Cómo verificar: Comprueba que en la lista de webhooks de GitHub aparece un punto verde al lado de tu URL.
+
++ **Activar el disparador en tu Job de Jenkins**:
+    - Entra en tu panel de Jenkins (http://localhost:8080) y abre la configuración de tu pipeline.
+    - En la sección Build Triggers, marca la casilla "GitHub hook trigger for GITScm polling".
+    - Guarda los cambios.
+
++ **Realizar la prueba de fuego con un Push**:
+    - Modifica ligeramente el archivo Jenkinsfile en tu rama local.
+    - Haz commit y push a tu repositorio
+    > Cómo verificar: Observa la terminal donde corre ngrok para ver la petición HTTP entrante con código 200 OK, y revisa tu panel de Jenkins para comprobar que el build se ha disparado solo.
+
+![](./images/webhook2.png)  
+
+
+## Verificaciones
+
++ Hacemos commit y push a la rama del trigger Jenkins - Github:
+
++ Vemos los steps:
+
++ Vemos los logs de ngrok en local:
 
 
 ## Author

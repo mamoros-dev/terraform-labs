@@ -47,7 +47,7 @@ pipeline {
             echo "¡Éxito total! La versión ${env.APP_VERSION} se empaquetó correctamente."
         }
         failure {
-            error "El pipeline falló en la ejecución."
+            error "El pipeline ha fallado en la ejecución."
         }
     }
 }
