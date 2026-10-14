@@ -145,6 +145,7 @@ https://a1b2-c3d4.ngrok-free.app
 
 + Vemos los logs de ngrok en local:
 ![](./images/ngrok2.png)  
+> Comunicación exitosa: El túnel de Ngrok ha recibido la petición HTTP POST enviada desde los servidores de GitHub en la nube y la ha entregado correctamente a través de tu puerto local hasta el contenedor de Jenkins (http://localhost:8080/github-webhook/).
 
 ## Tecnologias
 
@@ -248,6 +249,24 @@ pipeline {
     - Inspecciona la consola de Jenkins
 > Entra en tu panel de Jenkins y abre los detalles de la ejecución automática.  
 > Cómo verificar: Revisa que la fase "Despliegue Condicional por Rama" se haya ejecutado en verde porque tu rama cumple la condición del filtro when.
+
+![](./images/pipeline2.png)  
+> 
+
++ Para que Jenkins pueda usar una credencial real, hay que dar dos pasos:
+    - **Crear la credencial en Jenkins:**
+        + Vas a tu panel de Jenkins > Manage Jenkins > Credentials > System > Global credentials (unrestricted) > Add Credentials.
+        + Seleccionas el tipo (por ejemplo, Secret text o Username with password), le pones un ID único (ej: mi-token-corporativo) y guardas el secreto cifrado.
+
+    - **Llamar a ese ID real en tu Jenkinsfile:**
+        + En lugar de usar un nombre inventado, pones el ID exacto que acabas de registrar en Jenkins.
+
+![](./images/pipeline2_2.png)  
+> El fallo no tiene nada que ver con el Webhook ni con Ngrok (el disparador funcionó de maravilla y clonó tu repositorio perfectamente). El problema es que en el código de prueba que añadimos pusimos esto: `API_TOKEN = credentials('mi-token-corporativo-ficticio')` 
+
++ Lanzamos de nuevo el pipeline y todo ok!
+![](./images/pipeline2_3.png)  
+
 
 ## Author
 + Miguel — [GitHub](https://github.com/mamoros-dev) · [LinkedIn](https://www.linkedin.com/in/miguel-amoros-moret/)
