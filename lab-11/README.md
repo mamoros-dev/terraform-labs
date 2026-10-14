@@ -1,30 +1,13 @@
 # LAB 11: Automatización con Webhooks de GitHub y Jenkins
 
-```bash
-+---------------------------------------------------------------------------------------------------+
-|                           FLUJO AUTOMATIZADO CON GITHUB WEBHOOKS & JENKINS                        |
-+---------------------------------------------------------------------------------------------------+
-
-   [ Desarrollador / Tu Git ] 
-               │
-               ├── ( `git push` ) ──► [ Repositorio en GitHub ]
-               │                                │
-               │                                │ (Dispara Webhook HTTP POST)
-               │                                ▼
-               │                     [ Tu Jenkins Local (Puerto 8080) ]
-               │                                │
-               │                                │ (Clona, compila y construye)
-               ▼                                ▼
-     [ Rama Dedicada Lab 11 ] ──────► [ Pipeline Automático en Verde ]
-```
+![](./images/arquitectura.png)  
 
 ## Table of contents
 
 - [Ejercicio](#ejercicio)
 - [Webhook en GitHub](#webhook-en-github)
 - [Verificaciones](#verificaciones)
-- [Pipeline real](#pipeline-real)
-
+- [Tecnologias](#tecnologias)
 - [Author](#author)
 
 ## Ejercicio
@@ -50,7 +33,7 @@
             - En SCM, selecciona Git.
             - En Repository URL, pega la URL de tu repositorio de GitHub (ej: https://github.com/mamoros-dev/tu-repo.git
             - En Branch Specifier, pon */feature/lab11-webhooks-github.
-            - En Script Path, deja Jenkinsfile.
+            - En Script Path, deja Jenkinsfile o la ruta de él lab-11/Jenkinsfile.
         + Pulsa Save.
 
 + **Configurar el disparador de Webhook (Build triggers):**  
@@ -152,14 +135,35 @@ https://a1b2-c3d4.ngrok-free.app
 
 ![](./images/webhook2.png)  
 
-
 ## Verificaciones
 
 + Hacemos commit y push a la rama del trigger Jenkins - Github:
+![](./images/webhook3.png)  
 
 + Vemos los steps:
+![](./images/pipeline.png)  
 
 + Vemos los logs de ngrok en local:
+![](./images/ngrok2.png)  
+
+## Tecnologias
+
+Cómo colaboran las tecnologías en este flujo de CI/CD
++ **Tu Repositorio Local (Git) y GitHub:**
+    -  Tú escribes el código (Jenkinsfile) en tu ordenador y lo subes con git push. GitHub actúa como la "fuente de la verdad" centralizada que almacena la versión oficial del código.
+
++ **El Webhook de GitHub:**
+    - Cuando GitHub recibe tu git push, detecta que hay un evento configurado. En lugar de quedarse esperando, emite una notificación HTTP ultrarrápida (un payload en formato JSON) hacia fuera.
+
++ **El Túnel Inverso (Ngrok):**
+    - Como tu Jenkins vive protegido en tu ordenador local (localhost:8080), GitHub no puede verlo directamente. Ngrok intercepta esa petición que viene de internet y la canaliza de forma segura a través de un túnel cifrado hacia tu puerto local.
+
++ **El Plugin de GitHub en Jenkins:**
+    - Jenkins recibe la petición de Ngrok gracias al endpoint /github-webhook/. El servidor de Jenkins se despierta, comprueba qué repositorio y rama han cambiado, y se conecta por Git para clonar el código actualizado.
+
++ **El Motor de Jenkins (Jenkinsfile):**
+    - Jenkins lee el archivo paso a paso: valida parámetros, ejecuta comandos de shell mediante Bash (printf, docker build), levanta la imagen del contenedor en tu motor Docker local y te devuelve el resultado en verde en su panel.
+
 
 
 ## Author
