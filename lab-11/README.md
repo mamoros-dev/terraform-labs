@@ -8,6 +8,7 @@
 - [Webhook en GitHub](#webhook-en-github)
 - [Verificaciones](#verificaciones)
 - [Tecnologias](#tecnologias)
+- [Ejemplo Empresa](#ejemplo-empresa)
 - [Author](#author)
 
 ## Ejercicio
@@ -203,11 +204,11 @@ pipeline {
         
         stage('Despliegue Condicional por Rama') {
             // Práctica de empresa: Este stage solo se ejecuta si la rama es main o feature
-            when {
-                anyOf {
-                    branch 'main'
-                    branch 'feature/jenkins-webhook'
-                    branch 'feature/*'
+            wwhen {
+                expression { 
+                    env.BRANCH_NAME == 'feature/jenkins-webhook' || 
+                    env.GIT_BRANCH == 'origin/feature/jenkins-webhook' || 
+                    currentBuild.getBuildCauses()[0].shortDescription.contains('feature/jenkins-webhook')
                 }
             }
             steps {
@@ -242,6 +243,7 @@ pipeline {
     }
 }
 ```
+> WHEN: Por qué funciona: En lugar de mirar una sola variable, le decimos a Jenkins: "Comprueba si la rama se llama feature/jenkins-webhook, o si empieza por origin/, o incluso mira la descripción del evento que envió GitHub". De esta forma nos aseguramos de que, coja la variable por donde la coja, la detecte y ejecute la fase en verde.
 
 + Pruebas:
     - Actualiza tu archivo en local
@@ -251,7 +253,7 @@ pipeline {
 > Cómo verificar: Revisa que la fase "Despliegue Condicional por Rama" se haya ejecutado en verde porque tu rama cumple la condición del filtro when.
 
 ![](./images/pipeline2.png)  
-> 
+> > El fallo no tiene nada que ver con el Webhook ni con Ngrok (el disparador funcionó de maravilla y clonó tu repositorio perfectamente). El problema es que en el código de prueba que añadimos pusimos esto: `API_TOKEN = credentials('mi-token-corporativo-ficticio')` 
 
 + Para que Jenkins pueda usar una credencial real, hay que dar dos pasos:
     - **Crear la credencial en Jenkins:**
@@ -262,7 +264,6 @@ pipeline {
         + En lugar de usar un nombre inventado, pones el ID exacto que acabas de registrar en Jenkins.
 
 ![](./images/pipeline2_2.png)  
-> El fallo no tiene nada que ver con el Webhook ni con Ngrok (el disparador funcionó de maravilla y clonó tu repositorio perfectamente). El problema es que en el código de prueba que añadimos pusimos esto: `API_TOKEN = credentials('mi-token-corporativo-ficticio')` 
 
 + Lanzamos de nuevo el pipeline y todo ok!
 ![](./images/pipeline2_3.png)  
