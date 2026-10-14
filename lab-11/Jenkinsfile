@@ -28,10 +28,10 @@ pipeline {
         stage('Despliegue Condicional por Rama') {
             // Práctica de empresa: Este stage solo se ejecuta si la rama es main o feature
             when {
-                anyOf {
-                    branch 'main'
-                    branch 'feature/jenkins-webhook'
-                    branch 'feature/*'
+                expression { 
+                    env.BRANCH_NAME == 'feature/jenkins-webhook' || 
+                    env.GIT_BRANCH == 'origin/feature/jenkins-webhook' || 
+                    currentBuild.getBuildCauses()[0].shortDescription.contains('feature/jenkins-webhook')
                 }
             }
             steps {
