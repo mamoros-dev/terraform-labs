@@ -164,7 +164,90 @@ Cómo colaboran las tecnologías en este flujo de CI/CD
 + **El Motor de Jenkins (Jenkinsfile):**
     - Jenkins lee el archivo paso a paso: valida parámetros, ejecuta comandos de shell mediante Bash (printf, docker build), levanta la imagen del contenedor en tu motor Docker local y te devuelve el resultado en verde en su panel.
 
+## Ejemplo Empresa
 
++ **Práctica de Empresa: Inyección Segura de Credenciales y Control por Ramas**
++ En un entorno corporativo real, los pipelines nunca usan contraseñas fijas, y además suelen comportarse de forma distinta según la rama sobre la que se esté trabajando (main frente a ramas de desarrollo o feature).
++ Vamos a modificar tu `Jenkinsfile` actual para incorporar dos prácticas empresariales:
+    - Uso de un bloque `when` condicional para que una fase solo se ejecute si estamos en una rama específica.
+    - Uso de un bloque `credentials` para simular que inyectamos un token de acceso de forma cifrada.
+
+```Groovy
+pipeline {
+    agent any
+    
+    parameters {
+        string(name: 'VERSION_APP', defaultValue: '1.0.0', description: 'Versión de la aplicación')
+    }
+    
+    environment {
+        APP_VERSION = "${params.VERSION_APP}"
+        // Simulamos la llamada a una credencial cifrada almacenada en Jenkins
+        // (En producción usarías el ID real creado en el gestor de credenciales de Jenkins)
+        API_TOKEN = credentials('mi-token-corporativo-ficticio') 
+    }
+    
+    stages {
+        stage('Validación de Entorno') {
+            steps {
+                echo "Desplegando versión: ${env.APP_VERSION}"
+                // Comprobamos que la variable de credencial está protegida (Jenkins la enmascara como ***** en los logs)
+                script {
+                    if (env.API_TOKEN != null) {
+                        echo "Credencial corporativa cargada y enmascarada correctamente de forma segura."
+                    }
+                }
+            }
+        }
+        
+        stage('Despliegue Condicional por Rama') {
+            // Práctica de empresa: Este stage solo se ejecuta si la rama es main o feature
+            when {
+                anyOf {
+                    branch 'main'
+                    branch 'feature/jenkins-webhook'
+                    branch 'feature/*'
+                }
+            }
+            steps {
+                echo "Rama autorizada detectada. Ejecutando tareas específicas de integración..."
+                sh 'echo "Compilación validada para entornos de desarrollo/característica."'
+            }
+        }
+        
+        stage('Creación y Build Docker') {
+            steps {
+                sh 'echo "App Versión: ${APP_VERSION}" > app.info'
+                sh 'printf "FROM nginx:alpine\nCOPY app.info /usr/share/nginx/html/index.html\n" > Dockerfile'
+                sh 'docker build -t mi-empresa-app:${APP_VERSION} .'
+            }
+        }
+        
+        stage('Limpieza') {
+            steps {
+                sh 'docker rmi mi-empresa-app:${APP_VERSION} || true'
+                sh 'rm -f Dockerfile app.info'
+            }
+        }
+    }
+    
+    post {
+        success {
+            echo "¡Pipeline corporativo finalizado con éxito!"
+        }
+        failure {
+            error "El pipeline corporativo ha fallado."
+        }
+    }
+}
+```
+
++ Pruebas:
+    - Actualiza tu archivo en local
+    - Sube los cambios a GitHub
+    - Inspecciona la consola de Jenkins
+> Entra en tu panel de Jenkins y abre los detalles de la ejecución automática.  
+> Cómo verificar: Revisa que la fase "Despliegue Condicional por Rama" se haya ejecutado en verde porque tu rama cumple la condición del filtro when.
 
 ## Author
 + Miguel — [GitHub](https://github.com/mamoros-dev) · [LinkedIn](https://www.linkedin.com/in/miguel-amoros-moret/)

@@ -2,34 +2,48 @@ pipeline {
     agent any
     
     parameters {
-        string(name: 'VERSION_APP', defaultValue: '1.0.0', description: 'Versión de la aplicación a empaquetar')
-        booleanParam(name: 'EJECUTAR_TESTS', defaultValue: true, description: 'Marcar si se desean ejecutar las pruebas unitarias')
+        string(name: 'VERSION_APP', defaultValue: '1.0.0', description: 'Versión de la aplicación')
     }
     
     environment {
         APP_VERSION = "${params.VERSION_APP}"
+        // Simulamos la llamada a una credencial cifrada almacenada en Jenkins
+        // (En producción usarías el ID real creado en el gestor de credenciales de Jenkins)
+        API_TOKEN = credentials('mi-token-corporativo-ficticio') 
     }
     
     stages {
-        stage('Validación de Parámetros') {
+        stage('Validación de Entorno') {
             steps {
-                echo "Iniciando despliegue de la versión: ${env.APP_VERSION}"
+                echo "Desplegando versión: ${env.APP_VERSION}"
+                // Comprobamos que la variable de credencial está protegida (Jenkins la enmascara como ***** en los logs)
+                script {
+                    if (env.API_TOKEN != null) {
+                        echo "Credencial corporativa cargada y enmascarada correctamente de forma segura."
+                    }
+                }
             }
         }
         
-        stage('Crear Archivos del Build') {
+        stage('Despliegue Condicional por Rama') {
+            // Práctica de empresa: Este stage solo se ejecuta si la rama es main o feature
+            when {
+                anyOf {
+                    branch 'main'
+                    branch 'feature/jenkins-webhook'
+                    branch 'feature/*'
+                }
+            }
             steps {
-                // Creamos el contenido de app.info
+                echo "Rama autorizada detectada. Ejecutando tareas específicas de integración..."
+                sh 'echo "Compilación validada para entornos de desarrollo/característica."'
+            }
+        }
+        
+        stage('Creación y Build Docker') {
+            steps {
                 sh 'echo "App Versión: ${APP_VERSION}" > app.info'
-                
-                // Escribimos el Dockerfile de forma segura sin usar -e
                 sh 'printf "FROM nginx:alpine\nCOPY app.info /usr/share/nginx/html/index.html\n" > Dockerfile'
-            }
-        }
-        
-        stage('Construcción Docker') {
-            steps {
-                // Construimos la imagen utilizando la variable de entorno
                 sh 'docker build -t mi-empresa-app:${APP_VERSION} .'
             }
         }
@@ -44,10 +58,10 @@ pipeline {
     
     post {
         success {
-            echo "¡Éxito total! La versión ${env.APP_VERSION} se empaquetó correctamente."
+            echo "¡Pipeline corporativo finalizado con éxito!"
         }
         failure {
-            error "El pipeline falló en la ejecución."
+            error "El pipeline corporativo ha fallado."
         }
     }
 }
