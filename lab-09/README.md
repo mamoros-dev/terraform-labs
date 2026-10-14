@@ -1,4 +1,4 @@
-# LAB 8: Un Deployment y un Service en Kubernetes en local (Minikube / Kind)
+# LAB 9: Un Deployment y un Service en Kubernetes en local (Minikube / Kind)
 
 ![](./images/arquitectura.png)  
 
